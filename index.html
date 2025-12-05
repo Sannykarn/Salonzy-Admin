@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Salonzy | Vendor Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              serif: ['"Playfair Display"', 'serif'],
+              sans: ['"Inter"', 'sans-serif'],
+            },
+            colors: {
+              black: '#000000',
+              white: '#FFFFFF',
+              offblack: '#0a0a0a',
+              zinc: {
+                850: '#1f1f1f',
+                900: '#18181b',
+              }
+            },
+            animation: {
+              'spin-slow': 'spin 3s linear infinite',
+              'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'scissor-snip': 'snip 1.5s ease-in-out infinite',
+            },
+            keyframes: {
+              snip: {
+                '0%, 100%': { transform: 'rotate(0deg)' },
+                '50%': { transform: 'rotate(-15deg)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        background-color: #000000;
+        color: #ffffff;
+      }
+      /* Custom Scissor Animations */
+      .scissor-blade-top {
+        transform-origin: 10% 90%;
+        animation: snipTop 2s infinite ease-in-out;
+      }
+      .scissor-blade-bottom {
+        transform-origin: 10% 90%;
+        animation: snipBottom 2s infinite ease-in-out;
+      }
+      @keyframes snipTop {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(-25deg); }
+      }
+      @keyframes snipBottom {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(15deg); }
+      }
+      
+      /* Barber Pole Stripe Animation */
+      .barber-stripe {
+        background: repeating-linear-gradient(
+          45deg,
+          #ffffff,
+          #ffffff 10px,
+          #1a1a1a 10px,
+          #1a1a1a 20px
+        );
+        background-size: 28px 28px;
+        animation: stripe-slide 2s linear infinite;
+      }
+      @keyframes stripe-slide {
+        0% { background-position: 0 0; }
+        100% { background-position: 28px 0; }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.10.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.1"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
