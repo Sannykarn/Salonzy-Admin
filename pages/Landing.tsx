@@ -1,11 +1,48 @@
 import React, { useState } from 'react';
-import { ScissorsLogo, BarberPole } from '../components/Animations';
+import { ScissorsLogo } from '../components/Animations';
 import { Button, Input, Card } from '../components/UiComponents';
-import { ArrowRight, Lock, CheckCircle, Smartphone } from 'lucide-react';
+import { ArrowRight, Lock, CheckCircle, Smartphone, AlertCircle } from 'lucide-react';
 import { FOUNDERS } from '../constants';
+import { db } from '../services/db';
 
 const Landing: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
   const [activeTab, setActiveTab] = useState<'login' | 'apply'>('login');
+  const [formData, setFormData] = useState({ phone: '', password: '' });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(''); // Clear error on type
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    // Basic Validation
+    if (!formData.phone || !formData.password) {
+      setError('Please fill in all fields');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.phone.length < 10) {
+      setError('Please enter a valid 10-digit mobile number');
+      setIsLoading(false);
+      return;
+    }
+
+    // Simulate DB Check
+    const isValid = await db.validateVendor(formData.phone);
+    if (isValid) {
+      onLogin();
+    } else {
+      setError('Invalid credentials or account not approved.');
+    }
+    setIsLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black flex flex-col relative overflow-hidden">
@@ -66,23 +103,43 @@ const Landing: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
 
             <div className="flex gap-4 border-b border-zinc-800 mb-6 pb-2">
               <button 
-                onClick={() => setActiveTab('login')}
+                onClick={() => { setActiveTab('login'); setError(''); }}
                 className={`flex-1 pb-2 text-sm font-medium transition-colors ${activeTab === 'login' ? 'text-white border-b-2 border-white' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 Vendor Login
               </button>
               <button 
-                 onClick={() => setActiveTab('apply')}
+                 onClick={() => { setActiveTab('apply'); setError(''); }}
                 className={`flex-1 pb-2 text-sm font-medium transition-colors ${activeTab === 'apply' ? 'text-white border-b-2 border-white' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 Apply for Access
               </button>
             </div>
 
+            {error && (
+              <div className="mb-4 p-3 bg-red-900/20 border border-red-900 rounded-lg flex items-center gap-2 text-xs text-red-400">
+                <AlertCircle size={14} /> {error}
+              </div>
+            )}
+
             {activeTab === 'login' ? (
-              <form onSubmit={(e) => { e.preventDefault(); onLogin(); }} className="space-y-4">
-                <Input label="Vendor ID / Phone" placeholder="e.g. 9876500000" type="text" />
-                <Input label="Password" placeholder="••••••••" type="password" />
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Input 
+                  label="Vendor Phone" 
+                  name="phone"
+                  placeholder="e.g. 9876543210" 
+                  type="text" 
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                />
+                <Input 
+                  label="Password" 
+                  name="password"
+                  placeholder="••••••••" 
+                  type="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                />
                 
                 <div className="flex justify-between items-center text-xs text-gray-500">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -91,8 +148,10 @@ const Landing: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
                   <a href="#" className="hover:text-white">Reset Password?</a>
                 </div>
 
-                <Button type="submit" className="w-full group">
-                  Access Dashboard <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                <Button type="submit" disabled={isLoading} className="w-full group">
+                  {isLoading ? 'Verifying...' : (
+                    <>Access Dashboard <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
+                  )}
                 </Button>
               </form>
             ) : (
@@ -104,7 +163,7 @@ const Landing: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
                 <p className="text-sm text-gray-400">
                   Salonzy is currently invite-only. Contact our Super Admins to register your salon.
                 </p>
-                <Button variant="outline" className="w-full mt-4" onClick={() => window.location.href = `https://wa.me/919999999999`}>
+                <Button type="button" variant="outline" className="w-full mt-4" onClick={() => window.location.href = `https://wa.me/919999999999`}>
                   <Smartphone size={16} /> Contact Admin via WhatsApp
                 </Button>
               </div>

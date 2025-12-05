@@ -12,8 +12,11 @@ export interface Customer {
   id: string;
   name: string;
   phone: string;
+  email?: string;
   totalVisits: number;
   lastVisit: string;
+  ltv: number; // Lifetime Value
+  status: 'Active' | 'Inactive';
 }
 
 export enum BookingStatus {
@@ -40,6 +43,14 @@ export interface RevenueData {
   name: string;
   revenue: number;
   expenses: number;
+}
+
+export interface Ticket {
+  id: string;
+  subject: string;
+  message: string;
+  status: 'Open' | 'Resolved' | 'In Progress';
+  date: string;
 }
 
 export interface StatCardProps {

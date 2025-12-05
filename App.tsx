@@ -5,6 +5,9 @@ import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Bookings from './pages/Bookings';
 import Services from './pages/Services';
+import Revenue from './pages/Revenue';
+import Customers from './pages/Customers';
+import Support from './pages/Support';
 
 const App: React.FC = () => {
   // Simple auth state for demo purposes
@@ -54,6 +57,24 @@ const App: React.FC = () => {
         <Route path="/services" element={
           <AdminLayout>
             <Services />
+          </AdminLayout>
+        } />
+
+        <Route path="/revenue" element={
+          <AdminLayout>
+            <Revenue />
+          </AdminLayout>
+        } />
+
+        <Route path="/customers" element={
+          <AdminLayout>
+            <Customers />
+          </AdminLayout>
+        } />
+
+        <Route path="/support" element={
+          <AdminLayout>
+            <Support />
           </AdminLayout>
         } />
 

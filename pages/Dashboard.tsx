@@ -1,18 +1,23 @@
-import React from 'react';
-import { Card, Button } from '../components/UiComponents';
+import React, { useState, useEffect } from 'react';
+import { Card, Button, Badge } from '../components/UiComponents';
 import { 
   Users, 
   IndianRupee, 
   CalendarCheck, 
   Scissors, 
   TrendingUp,
-  ArrowUpRight
+  ArrowUpRight,
+  Clock
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, CartesianGrid } from 'recharts';
-import { REVENUE_DATA, MOCK_BOOKINGS } from '../constants';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { REVENUE_DATA } from '../constants';
+import { Booking } from '../types';
+import { db } from '../services/db';
+import Calendar from '../components/Calendar';
+import { useNavigate } from 'react-router-dom';
 
 const StatWidget: React.FC<{ title: string, value: string, icon: React.ElementType, sub: string, positive?: boolean }> = ({ title, value, icon: Icon, sub, positive = true }) => (
-  <Card className="relative overflow-hidden group">
+  <Card className="relative overflow-hidden group hover:border-zinc-600 transition-colors">
     <div className="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
       <Icon size={80} />
     </div>
@@ -33,16 +38,31 @@ const StatWidget: React.FC<{ title: string, value: string, icon: React.ElementTy
 );
 
 const Dashboard: React.FC = () => {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>('2025-05-12'); // Mock default date
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await db.getBookings();
+      setBookings(data);
+    };
+    fetchData();
+  }, []);
+
+  // Filter bookings for the selected date
+  const todaysBookings = bookings.filter(b => b.date === selectedDate);
+
   return (
     <div className="p-8 space-y-8 animate-[fadeIn_0.5s_ease-out]">
-      <header className="flex justify-between items-end">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h2 className="text-3xl font-serif font-bold text-white">Dashboard</h2>
-          <p className="text-gray-400 mt-1">Welcome back, Vendor. Here's what's happening today.</p>
+          <p className="text-gray-400 mt-1">Welcome back, Vendor. Here's your overview.</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline">Download Report</Button>
-          <Button>+ New Walk-in</Button>
+          <Button variant="outline" onClick={() => navigate('/revenue')}>Revenue Report</Button>
+          <Button onClick={() => navigate('/bookings')}>+ New Booking</Button>
         </div>
       </header>
 
@@ -55,10 +75,10 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Revenue Chart */}
+        {/* Main Chart */}
         <Card className="lg:col-span-2 min-h-[400px]">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-serif font-bold text-xl">Revenue Overview</h3>
+            <h3 className="font-serif font-bold text-xl">Revenue Trends</h3>
             <select className="bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm text-gray-300 focus:outline-none">
               <option>This Week</option>
               <option>This Month</option>
@@ -86,38 +106,39 @@ const Dashboard: React.FC = () => {
           </div>
         </Card>
 
-        {/* Recent Activity */}
-        <Card className="flex flex-col h-full">
-          <div className="flex justify-between items-center mb-6">
-             <h3 className="font-serif font-bold text-xl">Recent Bookings</h3>
-             <Button variant="ghost" className="text-xs">View All</Button>
+        {/* Calendar & Schedule */}
+        <Card className="flex flex-col h-full bg-zinc-900/50 border-zinc-800">
+          <div className="mb-6 border-b border-zinc-800 pb-4">
+             <Calendar bookings={bookings} selectedDate={selectedDate} onDateSelect={setSelectedDate} />
           </div>
-          <div className="space-y-4 overflow-y-auto flex-1 pr-2">
-            {MOCK_BOOKINGS.slice(0, 5).map((booking) => (
-              <div key={booking.id} className="flex justify-between items-center p-3 rounded-lg hover:bg-zinc-900 transition-colors border border-transparent hover:border-zinc-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-sm font-bold text-gray-300">
-                    {booking.customerName.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">{booking.customerName}</p>
-                    <p className="text-xs text-gray-500">{booking.serviceName} • {booking.time}</p>
-                  </div>
+
+          <div className="flex justify-between items-center mb-4">
+             <h3 className="font-serif font-bold text-lg">Schedule <span className="text-gray-500 font-sans font-normal text-sm">({selectedDate})</span></h3>
+             <Button variant="ghost" className="text-xs" onClick={() => navigate('/bookings')}>View All</Button>
+          </div>
+
+          <div className="space-y-3 overflow-y-auto flex-1 pr-2 max-h-[250px] custom-scrollbar">
+            {todaysBookings.length > 0 ? (
+              todaysBookings.map((booking) => (
+                <div key={booking.id} className="flex gap-3 items-start p-3 rounded-lg bg-black border border-zinc-800 hover:border-zinc-600 transition-all cursor-pointer" onClick={() => navigate('/bookings')}>
+                   <div className="mt-1 text-gray-500">
+                     <Clock size={14} />
+                   </div>
+                   <div className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-bold text-white">{booking.time}</span>
+                        <Badge status={booking.status} />
+                      </div>
+                      <p className="text-sm font-medium text-gray-300 mt-1">{booking.customerName}</p>
+                      <p className="text-xs text-gray-500">{booking.serviceName}</p>
+                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-white">₹{booking.amount}</p>
-                  <p className={`text-[10px] uppercase font-bold tracking-wider ${
-                    booking.status === 'Confirmed' ? 'text-green-500' :
-                    booking.status === 'Pending' ? 'text-yellow-500' : 'text-gray-500'
-                  }`}>{booking.status}</p>
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500 text-sm">
+                No bookings for this date.
               </div>
-            ))}
-          </div>
-          <div className="mt-4 pt-4 border-t border-zinc-800">
-             <Button variant="outline" className="w-full text-xs h-8">
-               <ArrowUpRight size={14} /> Open Calendar
-             </Button>
+            )}
           </div>
         </Card>
       </div>
