@@ -88,6 +88,12 @@ class DatabaseService {
     if (phone.length < 10) return false;
     return true;
   }
+
+  async submitApplication(data: any): Promise<boolean> {
+    await delay(2000); // Simulate processing
+    console.log("Vendor Application Submitted to MySQL:", data);
+    return true;
+  }
 }
 
 export const db = new DatabaseService();

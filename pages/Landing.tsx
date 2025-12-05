@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ScissorsLogo } from '../components/Animations';
 import { Button, Input, Card } from '../components/UiComponents';
-import { ArrowRight, Lock, CheckCircle, Smartphone, AlertCircle } from 'lucide-react';
+import { ArrowRight, Lock, CheckCircle, Smartphone, AlertCircle, Mail } from 'lucide-react';
 import { FOUNDERS } from '../constants';
 import { db } from '../services/db';
 
@@ -73,10 +73,10 @@ const Landing: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
     const phoneRegex = /^[0-9]{10}$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!signupData.ownerName.trim()) errors.ownerName = "Owner Name is required";
+    if (!signupData.ownerName.trim()) errors.ownerName = "Authorized Name is required";
     else if (signupData.ownerName.length < 3) errors.ownerName = "Name too short";
 
-    if (!signupData.salonName.trim()) errors.salonName = "Salon Name is required";
+    if (!signupData.salonName.trim()) errors.salonName = "Business Name is required";
     
     if (!signupData.phone.trim()) errors.phone = "Phone number is required";
     else if (!phoneRegex.test(signupData.phone)) errors.phone = "Enter a valid 10-digit number";
@@ -98,11 +98,14 @@ const Landing: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
     if (!validateSignup()) return;
 
     setIsLoading(true);
-    // Simulate API delay for signup
-    setTimeout(() => {
-        setIsLoading(false);
+    try {
+        await db.submitApplication(signupData);
         setIsSignupSuccess(true);
-    }, 1500);
+    } catch (error) {
+        console.error("Signup failed", error);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -219,67 +222,76 @@ const Landing: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
                 {isSignupSuccess ? (
                     <div className="text-center py-8 animate-[fadeIn_0.5s_ease-out]">
                         <div className="mx-auto w-16 h-16 bg-green-900/20 border border-green-900 rounded-full flex items-center justify-center mb-4">
-                            <CheckCircle size={32} className="text-green-500" />
+                            <Mail size={32} className="text-green-500" />
                         </div>
-                        <h3 className="text-xl font-serif font-bold text-white mb-2">Application Sent!</h3>
-                        <p className="text-sm text-gray-400 mb-6">
-                            Your application for <strong>{signupData.salonName}</strong> has been received. Our Super Admins will verify your details and approve your account within 24 hours.
+                        <h3 className="text-xl font-serif font-bold text-white mb-2">Application Submitted!</h3>
+                        <p className="text-sm text-gray-400 mb-6 leading-relaxed">
+                            Thank you, <strong>{signupData.ownerName}</strong>.<br/>
+                            Your application for <span className="text-white">{signupData.salonName}</span> is currently under business verification.
                         </p>
+                        <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-800 mb-6 text-left">
+                            <div className="flex gap-3">
+                                <CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" />
+                                <p className="text-xs text-gray-300">
+                                    Once approved, a mail with your <strong>Login ID</strong> and <strong>Password</strong> will be shared on <span className="text-white underline">{signupData.email}</span>.
+                                </p>
+                            </div>
+                        </div>
                         <Button variant="outline" onClick={() => { setActiveTab('login'); setIsSignupSuccess(false); setSignupData({...signupData, password: '', confirmPassword: ''}); }}>
                             Back to Login
                         </Button>
                     </div>
                 ) : (
                     <form onSubmit={handleSignupSubmit} className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <Input 
-                                    label="Owner Name" 
-                                    name="ownerName"
-                                    placeholder="Full Name"
-                                    value={signupData.ownerName}
-                                    onChange={handleSignupChange}
-                                    className={signupErrors.ownerName ? "border-red-500 focus:border-red-500" : ""}
-                                />
-                                {signupErrors.ownerName && <span className="text-[10px] text-red-400 mt-1 block">{signupErrors.ownerName}</span>}
-                            </div>
-                            <div>
-                                <Input 
-                                    label="Salon Name" 
-                                    name="salonName"
-                                    placeholder="Salon Name"
-                                    value={signupData.salonName}
-                                    onChange={handleSignupChange}
-                                    className={signupErrors.salonName ? "border-red-500 focus:border-red-500" : ""}
-                                />
-                                {signupErrors.salonName && <span className="text-[10px] text-red-400 mt-1 block">{signupErrors.salonName}</span>}
-                            </div>
-                        </div>
-                        
                         <div>
-                            <Input 
-                                label="Phone Number" 
-                                name="phone"
-                                type="tel"
-                                placeholder="10-digit mobile"
-                                value={signupData.phone}
+                             <Input 
+                                label="Business / Salon Name" 
+                                name="salonName"
+                                placeholder="e.g. Looks Salon"
+                                value={signupData.salonName}
                                 onChange={handleSignupChange}
-                                className={signupErrors.phone ? "border-red-500 focus:border-red-500" : ""}
+                                className={signupErrors.salonName ? "border-red-500 focus:border-red-500" : ""}
                             />
-                            {signupErrors.phone && <span className="text-[10px] text-red-400 mt-1 block">{signupErrors.phone}</span>}
+                            {signupErrors.salonName && <span className="text-[10px] text-red-400 mt-1 block">{signupErrors.salonName}</span>}
                         </div>
 
                         <div>
                             <Input 
-                                label="Email Address" 
-                                name="email"
-                                type="email"
-                                placeholder="vendor@salonzy.com"
-                                value={signupData.email}
+                                label="Authorized Person Name" 
+                                name="ownerName"
+                                placeholder="Full Name of Owner"
+                                value={signupData.ownerName}
                                 onChange={handleSignupChange}
-                                className={signupErrors.email ? "border-red-500 focus:border-red-500" : ""}
+                                className={signupErrors.ownerName ? "border-red-500 focus:border-red-500" : ""}
                             />
-                            {signupErrors.email && <span className="text-[10px] text-red-400 mt-1 block">{signupErrors.email}</span>}
+                            {signupErrors.ownerName && <span className="text-[10px] text-red-400 mt-1 block">{signupErrors.ownerName}</span>}
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                             <div>
+                                <Input 
+                                    label="Phone Number" 
+                                    name="phone"
+                                    type="tel"
+                                    placeholder="Mobile"
+                                    value={signupData.phone}
+                                    onChange={handleSignupChange}
+                                    className={signupErrors.phone ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {signupErrors.phone && <span className="text-[10px] text-red-400 mt-1 block">{signupErrors.phone}</span>}
+                            </div>
+                            <div>
+                                <Input 
+                                    label="Email ID" 
+                                    name="email"
+                                    type="email"
+                                    placeholder="Email"
+                                    value={signupData.email}
+                                    onChange={handleSignupChange}
+                                    className={signupErrors.email ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {signupErrors.email && <span className="text-[10px] text-red-400 mt-1 block">{signupErrors.email}</span>}
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
@@ -288,7 +300,7 @@ const Landing: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
                                     label="Password" 
                                     name="password"
                                     type="password"
-                                    placeholder="••••••"
+                                    placeholder="Create Pass"
                                     value={signupData.password}
                                     onChange={handleSignupChange}
                                     className={signupErrors.password ? "border-red-500 focus:border-red-500" : ""}
@@ -300,7 +312,7 @@ const Landing: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
                                     label="Confirm" 
                                     name="confirmPassword" 
                                     type="password"
-                                    placeholder="••••••"
+                                    placeholder="Confirm Pass"
                                     value={signupData.confirmPassword}
                                     onChange={handleSignupChange}
                                     className={signupErrors.confirmPassword ? "border-red-500 focus:border-red-500" : ""}
@@ -310,10 +322,13 @@ const Landing: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
                         </div>
 
                         <Button type="submit" disabled={isLoading} className="w-full mt-2 group">
-                            {isLoading ? 'Submitting...' : (
+                            {isLoading ? 'Submitting Application...' : (
                                 <>Apply for Access <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>
                             )}
                         </Button>
+                        <p className="text-[10px] text-center text-gray-500 mt-2">
+                           By applying, you agree to Salonzy's Vendor Terms & Conditions.
+                        </p>
                     </form>
                 )}
                 </>
