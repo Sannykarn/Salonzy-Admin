@@ -5,7 +5,7 @@ export interface Service {
   name: string;
   duration: number; // in minutes
   price: number;
-  category: 'Hair' | 'Beard' | 'Facial' | 'Massage' | 'Combo';
+  category: string;
 }
 
 export interface Customer {
@@ -51,6 +51,26 @@ export interface Ticket {
   message: string;
   status: 'Open' | 'Resolved' | 'In Progress';
   date: string;
+}
+
+export interface InvoiceItem {
+  id: string;
+  description: string;
+  quantity: number;
+  price: number;
+  total: number;
+}
+
+export interface Invoice {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  date: string;
+  items: InvoiceItem[];
+  subtotal: number;
+  tax: number;
+  total: number;
+  status: 'Paid' | 'Unpaid';
 }
 
 export interface StatCardProps {

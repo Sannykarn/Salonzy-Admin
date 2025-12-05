@@ -6,9 +6,9 @@ import {
   Calendar, 
   Users, 
   IndianRupee, 
-  Settings, 
   LogOut,
-  MessageSquare
+  MessageSquare,
+  FileText
 } from 'lucide-react';
 import { ScissorsLogo } from './Animations';
 import { FOUNDERS } from '../constants';
@@ -21,6 +21,7 @@ const Sidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     { name: 'Bookings', path: '/bookings', icon: Calendar },
     { name: 'Services', path: '/services', icon: Scissors },
     { name: 'Customers', path: '/customers', icon: Users },
+    { name: 'Invoices', path: '/invoices', icon: FileText },
     { name: 'Revenue', path: '/revenue', icon: IndianRupee },
     { name: 'Support', path: '/support', icon: MessageSquare },
   ];

@@ -12,7 +12,7 @@
  * - transactions (id, booking_id, amount, type, timestamp)
  */
 
-import { Booking, Customer, Ticket, BookingStatus } from '../types';
+import { Booking, Customer, Ticket, BookingStatus, Invoice } from '../types';
 import { MOCK_BOOKINGS, MOCK_SERVICES } from '../constants';
 
 // Simulated DB Latency
@@ -30,6 +30,7 @@ class DatabaseService {
     { id: 'T001', subject: 'Payment Issue', message: 'Razorpay settlement pending for Order #1234', status: 'In Progress', date: '2025-05-10' },
     { id: 'T002', subject: 'Update Service Menu', message: 'Need to add "Bridal Package" to my list', status: 'Resolved', date: '2025-05-08' },
   ];
+  private invoices: Invoice[] = [];
 
   // --- BOOKINGS ---
   async getBookings(): Promise<Booking[]> {
@@ -40,6 +41,24 @@ class DatabaseService {
   async getBookingsByDate(date: string): Promise<Booking[]> {
     await delay(200);
     return this.bookings.filter(b => b.date === date);
+  }
+
+  async addBooking(bookingData: Omit<Booking, 'id' | 'status' | 'amount' | 'serviceName' | 'chairId'>): Promise<Booking> {
+    await delay(500);
+    // Find service to get price and name
+    const service = MOCK_SERVICES.find(s => s.id === bookingData.serviceId);
+    
+    const newBooking: Booking = {
+      id: `B${Math.floor(Math.random() * 10000)}`,
+      ...bookingData,
+      serviceName: service?.name || 'Custom Service',
+      amount: service?.price || 0,
+      status: BookingStatus.PENDING,
+      chairId: Math.floor(Math.random() * 5) + 1
+    };
+    
+    this.bookings.unshift(newBooking);
+    return newBooking;
   }
 
   // --- CUSTOMERS ---
@@ -60,6 +79,18 @@ class DatabaseService {
     };
     this.customers.push(newCustomer);
     return newCustomer;
+  }
+
+  // --- INVOICES ---
+  async createInvoice(invoiceData: Omit<Invoice, 'id'>): Promise<Invoice> {
+    await delay(600);
+    const newInvoice: Invoice = {
+      id: `INV-${Math.floor(Math.random() * 10000)}`,
+      ...invoiceData
+    };
+    this.invoices.push(newInvoice);
+    console.log("Invoice Generated:", newInvoice);
+    return newInvoice;
   }
 
   // --- SUPPORT ---

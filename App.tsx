@@ -8,6 +8,7 @@ import Services from './pages/Services';
 import Revenue from './pages/Revenue';
 import Customers from './pages/Customers';
 import Support from './pages/Support';
+import Invoices from './pages/Invoices';
 
 const App: React.FC = () => {
   // Simple auth state for demo purposes
@@ -57,6 +58,12 @@ const App: React.FC = () => {
         <Route path="/services" element={
           <AdminLayout>
             <Services />
+          </AdminLayout>
+        } />
+
+        <Route path="/invoices" element={
+          <AdminLayout>
+            <Invoices />
           </AdminLayout>
         } />
 
